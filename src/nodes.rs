@@ -20,6 +20,7 @@ pub enum FactorOperator {
     Multiply,
     Divide,
     Modulo,
+    IntDivide,
 }
 #[derive(Clone)]
 pub enum Factor {

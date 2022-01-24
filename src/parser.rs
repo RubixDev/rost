@@ -61,6 +61,7 @@ impl Parser {
                 TokenType::Multiply => FactorOperator::Multiply,
                 TokenType::Divide => FactorOperator::Divide,
                 TokenType::Modulo => FactorOperator::Modulo,
+                TokenType::IntDivide => FactorOperator::IntDivide,
                 _ => break,
             };
             self.advance();

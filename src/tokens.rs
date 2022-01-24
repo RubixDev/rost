@@ -2,13 +2,14 @@ use std::fmt::Debug;
 
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub enum TokenType {
-    LParen,   // '('
-    RParen,   // ')'
-    Plus,     // '+'
-    Minus,    // '-'
-    Multiply, // '*'
-    Divide,   // '/'
-    Modulo,   // '%'
+    LParen,    // '('
+    RParen,    // ')'
+    Plus,      // '+'
+    Minus,     // '-'
+    Multiply,  // '*'
+    Divide,    // '/'
+    Modulo,    // '%'
+    IntDivide, // '\'
 
     Number,
 

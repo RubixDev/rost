@@ -3,7 +3,7 @@ use crate::tokens::{Token, TokenType};
 
 const DIGITS: [char; 10] = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
 const SPACES: [char; 2] = [' ', '\t'];
-const SINGLE_CHARS: [char; 7] = ['(', ')', '+', '-', '*', '/', '%'];
+const SINGLE_CHARS: [char; 8] = ['(', ')', '+', '-', '*', '/', '%', '\\'];
 
 pub struct Lexer<'a> {
     input: Chars<'a>,
@@ -50,13 +50,14 @@ impl <'a> Lexer<'a> {
 
     fn make_single_char(&mut self, char: char) -> Token {
         let tok_type = match char {
-            '(' => TokenType::LParen,
-            ')' => TokenType::RParen,
-            '+' => TokenType::Plus,
-            '-' => TokenType::Minus,
-            '*' => TokenType::Multiply,
-            '/' => TokenType::Divide,
-            '%' => TokenType::Modulo,
+            '('  => TokenType::LParen,
+            ')'  => TokenType::RParen,
+            '+'  => TokenType::Plus,
+            '-'  => TokenType::Minus,
+            '*'  => TokenType::Multiply,
+            '/'  => TokenType::Divide,
+            '%'  => TokenType::Modulo,
+            '\\' => TokenType::IntDivide,
             _ => panic!(),
         };
         self.advance();

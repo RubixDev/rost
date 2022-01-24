@@ -41,6 +41,7 @@ impl Interpreter {
                 FactorOperator::Multiply => { base *= other },
                 FactorOperator::Divide => { base = base / other },
                 FactorOperator::Modulo => { base = base % other },
+                FactorOperator::IntDivide => { base = (base / other).with_scale(0) },
             }
         }
 

@@ -7,7 +7,9 @@ eof         = ? end of file ? ;
 
 (* nodes *)
 Expression  = Term , { ( '+' | '-' ) , Term } ;
-Term        = Factor , { ( '*' | '/' | '%' ) , Factor } ;
+Term        = Factor , { ( '*' | '/' | '%' | '\' ) , Factor } ;
 Factor      = ( '+' | '-' ) , Factor
             | '('  , Expression , ')'
             | number ;
+
+calculation = Expression, eof ;
