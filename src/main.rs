@@ -14,6 +14,7 @@ fn main() {
         print!(">>> ");
         std::io::stdout().flush().unwrap();
         let line = std::io::stdin().lock().lines().next().unwrap().unwrap();
+        if line.chars().all(|char| [' ', '\t'].contains(&char)) { continue; }
 
         let start = std::time::Instant::now();
 
