@@ -3,7 +3,7 @@ use crate::tokens::{Token, TokenType};
 
 const DIGITS: [char; 10] = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
 const SPACES: [char; 2] = [' ', '\t'];
-const SINGLE_CHARS: [char; 8] = ['(', ')', '+', '-', '*', '/', '%', '\\'];
+const SINGLE_CHARS: [char; 9] = ['(', ')', '+', '-', '*', '/', '%', '\\', '^'];
 
 pub struct Lexer<'a> {
     input: Chars<'a>,
@@ -58,6 +58,7 @@ impl <'a> Lexer<'a> {
             '/'  => TokenType::Divide,
             '%'  => TokenType::Modulo,
             '\\' => TokenType::IntDivide,
+            '^'  => TokenType::Power,
             _ => panic!(),
         };
         self.advance();

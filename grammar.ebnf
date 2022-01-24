@@ -9,7 +9,9 @@ eof         = ? end of file ? ;
 Expression  = Term , { ( '+' | '-' ) , Term } ;
 Term        = Factor , { ( '*' | '/' | '%' | '\' ) , Factor } ;
 Factor      = ( '+' | '-' ) , Factor
-            | '('  , Expression , ')'
-            | number ;
+            | Power ;
+Power       = Atom , [ '^' , Factor ] ;
+Atom        = number
+            | '('  , Expression , ')' ;
 
 calculation = Expression, eof ;

@@ -1,4 +1,4 @@
-use bigdecimal::BigDecimal;
+use rust_decimal::Decimal;
 
 #[derive(Clone)]
 pub struct Expression {
@@ -25,6 +25,15 @@ pub enum FactorOperator {
 #[derive(Clone)]
 pub enum Factor {
     Unary(TermOperator, Box<Factor>),
+    Power(Box<Power>),
+}
+#[derive(Clone)]
+pub struct Power {
+    pub base: Atom,
+    pub exponent: Option<Factor>,
+}
+#[derive(Clone)]
+pub enum Atom {
+    Number(Decimal),
     Expression(Expression),
-    Number(BigDecimal),
 }

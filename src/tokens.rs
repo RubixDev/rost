@@ -10,6 +10,7 @@ pub enum TokenType {
     Divide,    // '/'
     Modulo,    // '%'
     IntDivide, // '\'
+    Power,     // '^'
 
     Number,
 

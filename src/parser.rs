@@ -1,5 +1,5 @@
-use bigdecimal::BigDecimal;
-use crate::{tokens::{Token, TokenType}, nodes::{Expression, TermOperator, Term, FactorOperator, Factor}};
+use rust_decimal::Decimal;
+use crate::{tokens::{Token, TokenType}, nodes::{Expression, TermOperator, Term, FactorOperator, Factor, Power, Atom}};
 
 pub struct Parser {
     tokens: Vec<Token>,
@@ -72,6 +72,28 @@ impl Parser {
     }
 
     fn factor(&mut self) -> Factor {
+        let operator = match self.current_token.token_type {
+            TokenType::Plus => TermOperator::Plus,
+            TokenType::Minus => TermOperator::Minus,
+            _ => { return Factor::Power(Box::new(self.power())); },
+        };
+        self.advance();
+        return Factor::Unary(operator, Box::new(self.factor()));
+    }
+
+    fn power(&mut self) -> Power {
+        let base = self.atom();
+
+        let mut exponent = None;
+        if self.current_token.token_type == TokenType::Power {
+            self.advance();
+            exponent = Some(self.factor());
+        }
+
+        return Power { base, exponent };
+    }
+
+    fn atom(&mut self) -> Atom {
         if self.current_token.token_type == TokenType::LParen {
             self.advance();
             let expression = self.expression();
@@ -79,21 +101,11 @@ impl Parser {
                 panic!("SyntaxError: Expected `)`, got `{}`", self.current_token.value);
             }
             self.advance();
-            return Factor::Expression(expression);
+            return Atom::Expression(expression);
         }
 
-        if self.current_token.token_type == TokenType::Number {
-            let num = Factor::Number(self.current_token.value.parse::<BigDecimal>().unwrap());
-            self.advance();
-            return num;
-        }
-
-        let operator = match self.current_token.token_type {
-            TokenType::Plus => TermOperator::Plus,
-            TokenType::Minus => TermOperator::Minus,
-            _ => panic!("SyntaxError: Expected expression"),
-        };
+        let num = self.current_token.value.parse::<Decimal>().unwrap();
         self.advance();
-        return Factor::Unary(operator, Box::new(self.factor()));
+        return Atom::Number(num);
     }
 }
