@@ -42,6 +42,10 @@ impl <'a> Lexer<'a> {
         self.current_char = self.input.next();
     }
 
+    fn next(&self) -> Option<char> {
+        return self.input.clone().next();
+    }
+
     // ---------------------------------------------
 
     fn make_single_char(&mut self, char: char) -> Token {
@@ -66,6 +70,20 @@ impl <'a> Lexer<'a> {
         while self.current_char != None && DIGITS.contains(&self.current_char.unwrap()) {
             number.push(self.current_char.unwrap());
             self.advance();
+        }
+
+        if let Some(next_char) = self.next() {
+            if self.current_char == Some('.') && DIGITS.contains(&next_char) {
+                number.push('.');
+                self.advance();
+                number.push(next_char);
+                self.advance();
+
+                while self.current_char != None && DIGITS.contains(&self.current_char.unwrap()) {
+                    number.push(self.current_char.unwrap());
+                    self.advance();
+                }
+            }
         }
 
         return Token::new(TokenType::Number, number);
