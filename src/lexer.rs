@@ -30,7 +30,7 @@ impl <'a> Lexer<'a> {
             } else if DIGITS.contains(&current_char) {
                 tokens.push(self.make_number());
             } else {
-                panic!("SyntaxError: Illegal character '{}'", current_char);
+                panic!("SyntaxError: Illegal character `{}`", current_char);
             }
         }
         tokens.push(Token::new(TokenType::EOF, String::new()));
