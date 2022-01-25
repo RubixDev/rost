@@ -4,7 +4,7 @@ pub type Result<T> = std::result::Result<T, Error>;
 
 macro_rules! error {
     ($kind:expr, $($arg:tt)*) => {
-        return Err(crate::error::Error::new($kind, format!($($arg)*)));
+        return Err(crate::error::Error::new($kind, format!($($arg)*)))
     };
 }
 

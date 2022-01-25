@@ -33,7 +33,7 @@ impl <'a> Lexer<'a> {
                 error!(ErrorKind::SyntaxError, "Illegal character `{}`", current_char);
             }
         }
-        tokens.push(Token::new(TokenType::EOF, String::new()));
+        tokens.push(Token::new(TokenType::EOF, String::from("EOF")));
 
         return Ok(tokens);
     }

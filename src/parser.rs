@@ -20,7 +20,7 @@ impl Parser {
     pub fn parse(&mut self) -> Result<Expression> {
         let expression = self.expression()?;
         if self.current_token.token_type != TokenType::EOF {
-            error!(ErrorKind::SyntaxError, "Expected end of file");
+            error!(ErrorKind::SyntaxError, "Expected end of file, got `{}`", self.current_token.value);
         }
         return Ok(expression);
     }
@@ -98,13 +98,16 @@ impl Parser {
             self.advance();
             let expression = self.expression()?;
             if self.current_token.token_type != TokenType::RParen {
-                error!(ErrorKind::SyntaxError, "SyntaxError: Expected `)`, got `{}`", self.current_token.value);
+                error!(ErrorKind::SyntaxError, "Expected `)`, got `{}`", self.current_token.value);
             }
             self.advance();
             return Ok(Atom::Expression(expression));
         }
 
-        let num = self.current_token.value.parse::<Decimal>().unwrap();
+        let num = match self.current_token.value.parse::<Decimal>() {
+            Ok(num) => num,
+            Err(_) => error!(ErrorKind::SyntaxError, "Expected number, got `{}`", self.current_token.value),
+        };
         self.advance();
         return Ok(Atom::Number(num));
     }
