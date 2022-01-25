@@ -28,7 +28,7 @@ fn main() {
                     Err(e) => { eprintln!("\x1b[31m{}\x1b[0m", e); continue; },
                 };
 
-                let mut parser = Parser::new(tokens);
+                let mut parser = Parser::new(&tokens);
                 let nodes = match parser.parse() {
                     Ok(nodes) => nodes,
                     Err(e) => { eprintln!("\x1b[31m{}\x1b[0m", e); continue; },

@@ -1,23 +1,22 @@
 use rust_decimal::Decimal;
+use std::slice::Iter;
 use crate::{tokens::{Token, TokenType}, nodes::{Expression, TermOperator, Term, FactorOperator, Factor, Power, Atom}, error::{Result, ErrorKind}};
 
-pub struct Parser {
-    tokens: Vec<Token>,
+pub struct Parser<'a> {
+    tokens: Iter<'a, Token>,
     current_token: Token,
-    current_token_index: usize,
 }
 
-impl Parser {
-    pub fn new(tokens: Vec<Token>) -> Parser {
-        let first_token = tokens[0].clone();
+impl <'a> Parser<'a> {
+    pub fn new(tokens: &'a Vec<Token>) -> Parser<'a> {
         return Parser {
-            tokens,
-            current_token: first_token,
-            current_token_index: 0,
+            tokens: tokens.iter(),
+            current_token: Token::new(TokenType::EOF, String::from("EOF")),
         }
     }
 
     pub fn parse(&mut self) -> Result<Expression> {
+        self.advance();
         let expression = self.expression()?;
         if self.current_token.token_type != TokenType::EOF {
             error!(ErrorKind::SyntaxError, "Expected end of file, got `{}`", self.current_token.value);
@@ -26,10 +25,9 @@ impl Parser {
     }
 
     fn advance(&mut self) {
-        self.current_token_index += 1;
         self.current_token = self.tokens
-            .get(self.current_token_index)
-            .unwrap_or(&Token::new(TokenType::EOF, String::new()))
+            .next()
+            .unwrap_or(&Token::new(TokenType::EOF, String::from("EOF")))
             .clone();
     }
 
