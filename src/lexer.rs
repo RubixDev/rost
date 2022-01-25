@@ -1,25 +1,26 @@
-use std::str::Chars;
 use crate::tokens::{Token, TokenType};
 
 const DIGITS: [char; 10] = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
 const SPACES: [char; 2] = [' ', '\t'];
 const SINGLE_CHARS: [char; 7] = ['(', ')', '+', '-', '*', '/', '%'];
 
-pub struct Lexer<'a> {
-    input: Chars<'a>,
+pub struct Lexer {
+    input: String,
     current_char: Option<char>,
+    current_char_index: usize,
 }
 
-impl <'a> Lexer<'a> {
-    pub fn new(input: &'a String) -> Self {
+impl Lexer {
+    pub fn new(input: String) -> Self {
+        let first_char = input.chars().nth(0);
         return Lexer {
-            input: input.chars(),
-            current_char: None,
+            input,
+            current_char: first_char,
+            current_char_index: 0,
         };
     }
 
     pub fn scan(&mut self) -> Vec<Token> {
-        self.advance();
         let mut tokens = vec![];
 
         while let Some(current_char) = self.current_char {
@@ -39,11 +40,12 @@ impl <'a> Lexer<'a> {
     }
 
     fn advance(&mut self) {
-        self.current_char = self.input.next();
+        self.current_char_index += 1;
+        self.current_char = self.input.chars().nth(self.current_char_index);
     }
 
     fn next(&self) -> Option<char> {
-        return self.input.clone().next();
+        return self.input.chars().nth(self.current_char_index + 1);
     }
 
     // ---------------------------------------------
