@@ -25,10 +25,7 @@ pub struct Token {
 
 impl Token {
     pub fn new(token_type: TokenType, value: String) -> Self {
-        return Token {
-            token_type: token_type,
-            value: value,
-        }
+        return Token { token_type, value }
     }
 }
 
