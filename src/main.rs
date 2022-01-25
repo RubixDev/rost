@@ -1,3 +1,5 @@
+#[macro_use]
+mod error;
 mod lexer;
 mod tokens;
 mod parser;
@@ -21,10 +23,16 @@ fn main() {
                 let start = std::time::Instant::now();
 
                 let mut lexer = Lexer::new(&line);
-                let tokens = lexer.scan();
+                let tokens = match lexer.scan() {
+                    Ok(tokens) => tokens,
+                    Err(e) => { eprintln!("\x1b[31m{}\x1b[0m", e); continue; },
+                };
 
                 let mut parser = Parser::new(tokens);
-                let nodes = parser.parse();
+                let nodes = match parser.parse() {
+                    Ok(nodes) => nodes,
+                    Err(e) => { eprintln!("\x1b[31m{}\x1b[0m", e); continue; },
+                };
 
                 let interpreter = Interpreter::new(nodes);
                 interpreter.run();

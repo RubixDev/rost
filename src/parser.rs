@@ -1,5 +1,5 @@
 use rust_decimal::Decimal;
-use crate::{tokens::{Token, TokenType}, nodes::{Expression, TermOperator, Term, FactorOperator, Factor, Power, Atom}};
+use crate::{tokens::{Token, TokenType}, nodes::{Expression, TermOperator, Term, FactorOperator, Factor, Power, Atom}, error::{Result, ErrorKind}};
 
 pub struct Parser {
     tokens: Vec<Token>,
@@ -17,12 +17,12 @@ impl Parser {
         }
     }
 
-    pub fn parse(&mut self) -> Expression {
-        let expression = self.expression();
+    pub fn parse(&mut self) -> Result<Expression> {
+        let expression = self.expression()?;
         if self.current_token.token_type != TokenType::EOF {
-            panic!("SyntaxError: Expected end of file");
+            error!(ErrorKind::SyntaxError, "Expected end of file");
         }
-        return expression;
+        return Ok(expression);
     }
 
     fn advance(&mut self) {
@@ -35,8 +35,8 @@ impl Parser {
 
     // ------------------------------
 
-    fn expression(&mut self) -> Expression {
-        let term = self.term();
+    fn expression(&mut self) -> Result<Expression> {
+        let term = self.term()?;
 
         let mut following = vec![];
         loop {
@@ -46,14 +46,14 @@ impl Parser {
                 _ => break,
             };
             self.advance();
-            following.push((operator, self.term()));
+            following.push((operator, self.term()?));
         }
 
-        return Expression { term: Box::new(term), following };
+        return Ok(Expression { term: Box::new(term), following });
     }
 
-    fn term(&mut self) -> Term {
-        let factor = self.factor();
+    fn term(&mut self) -> Result<Term> {
+        let factor = self.factor()?;
 
         let mut following = vec![];
         loop {
@@ -65,47 +65,47 @@ impl Parser {
                 _ => break,
             };
             self.advance();
-            following.push((operator, self.factor()));
+            following.push((operator, self.factor()?));
         }
 
-        return Term { factor, following };
+        return Ok(Term { factor, following });
     }
 
-    fn factor(&mut self) -> Factor {
+    fn factor(&mut self) -> Result<Factor> {
         let operator = match self.current_token.token_type {
             TokenType::Plus => TermOperator::Plus,
             TokenType::Minus => TermOperator::Minus,
-            _ => { return Factor::Power(Box::new(self.power())); },
+            _ => { return Ok(Factor::Power(Box::new(self.power()?))); },
         };
         self.advance();
-        return Factor::Unary(operator, Box::new(self.factor()));
+        return Ok(Factor::Unary(operator, Box::new(self.factor()?)));
     }
 
-    fn power(&mut self) -> Power {
-        let base = self.atom();
+    fn power(&mut self) -> Result<Power> {
+        let base = self.atom()?;
 
         let mut exponent = None;
         if self.current_token.token_type == TokenType::Power {
             self.advance();
-            exponent = Some(self.factor());
+            exponent = Some(self.factor()?);
         }
 
-        return Power { base, exponent };
+        return Ok(Power { base, exponent });
     }
 
-    fn atom(&mut self) -> Atom {
+    fn atom(&mut self) -> Result<Atom> {
         if self.current_token.token_type == TokenType::LParen {
             self.advance();
-            let expression = self.expression();
+            let expression = self.expression()?;
             if self.current_token.token_type != TokenType::RParen {
-                panic!("SyntaxError: Expected `)`, got `{}`", self.current_token.value);
+                error!(ErrorKind::SyntaxError, "SyntaxError: Expected `)`, got `{}`", self.current_token.value);
             }
             self.advance();
-            return Atom::Expression(expression);
+            return Ok(Atom::Expression(expression));
         }
 
         let num = self.current_token.value.parse::<Decimal>().unwrap();
         self.advance();
-        return Atom::Number(num);
+        return Ok(Atom::Number(num));
     }
 }

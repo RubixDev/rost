@@ -1,5 +1,5 @@
 use std::str::Chars;
-use crate::tokens::{Token, TokenType};
+use crate::{tokens::{Token, TokenType}, error::{Result, ErrorKind}};
 
 const DIGITS: [char; 10] = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
 const SPACES: [char; 2] = [' ', '\t'];
@@ -18,7 +18,7 @@ impl <'a> Lexer<'a> {
         };
     }
 
-    pub fn scan(&mut self) -> Vec<Token> {
+    pub fn scan(&mut self) -> Result<Vec<Token>> {
         self.advance();
         let mut tokens = vec![];
 
@@ -30,12 +30,12 @@ impl <'a> Lexer<'a> {
             } else if DIGITS.contains(&current_char) {
                 tokens.push(self.make_number());
             } else {
-                panic!("SyntaxError: Illegal character `{}`", current_char);
+                error!(ErrorKind::SyntaxError, "Illegal character `{}`", current_char);
             }
         }
         tokens.push(Token::new(TokenType::EOF, String::new()));
 
-        return tokens;
+        return Ok(tokens);
     }
 
     fn advance(&mut self) {
@@ -59,7 +59,7 @@ impl <'a> Lexer<'a> {
             '%'  => TokenType::Modulo,
             '\\' => TokenType::IntDivide,
             '^'  => TokenType::Power,
-            _ => panic!(),
+            _ => panic!(), // will never happen
         };
         self.advance();
         return Token::new(tok_type, char.to_string());
