@@ -69,8 +69,8 @@ impl <'a> Lexer<'a> {
         let mut number = self.current_char.unwrap().to_string();
         self.advance();
 
-        while self.current_char != None && DIGITS.contains(&self.current_char.unwrap()) {
-            number.push(self.current_char.unwrap());
+        while self.current_char != None && DIGITS.contains(&self.current_char.unwrap()) || self.current_char == Some('_') {
+            if self.current_char != Some('_') { number.push(self.current_char.unwrap()); }
             self.advance();
         }
 
@@ -81,8 +81,8 @@ impl <'a> Lexer<'a> {
                 number.push(next_char);
                 self.advance();
 
-                while self.current_char != None && DIGITS.contains(&self.current_char.unwrap()) {
-                    number.push(self.current_char.unwrap());
+                while self.current_char != None && DIGITS.contains(&self.current_char.unwrap()) || self.current_char == Some('_') {
+                    if self.current_char != Some('_') { number.push(self.current_char.unwrap()); }
                     self.advance();
                 }
             }
