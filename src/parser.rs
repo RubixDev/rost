@@ -11,7 +11,7 @@ impl Parser {
     pub fn new(tokens: Vec<Token>) -> Parser {
         let first_token = tokens[0].clone();
         return Parser {
-            tokens: tokens,
+            tokens,
             current_token: first_token,
             current_token_index: 0,
         }
