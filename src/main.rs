@@ -26,6 +26,6 @@ fn main() {
 
         let interpreter = Interpreter::new(nodes);
         interpreter.run();
-        println!("\x1b[90m[{:?}]\x1b[0m", start.elapsed());
+        println!("[{:?}]", start.elapsed());
     }
 }
