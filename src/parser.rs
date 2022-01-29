@@ -25,7 +25,7 @@ impl Parser {
         return expression;
     }
 
-    fn advance(&mut self) {
+    fn next(&mut self) {
         self.current_token_index += 1;
         self.current_token = self.tokens
             .get(self.current_token_index)
@@ -45,7 +45,7 @@ impl Parser {
                 TokenType::Minus => TermOperator::Minus,
                 _ => break,
             };
-            self.advance();
+            self.next();
             following.push((operator, self.term()));
         }
 
@@ -63,7 +63,7 @@ impl Parser {
                 TokenType::Modulo => FactorOperator::Modulo,
                 _ => break,
             };
-            self.advance();
+            self.next();
             following.push((operator, self.factor()));
         }
 
@@ -72,18 +72,18 @@ impl Parser {
 
     fn factor(&mut self) -> Factor {
         if self.current_token.token_type == TokenType::LParen {
-            self.advance();
+            self.next();
             let expression = self.expression();
             if self.current_token.token_type != TokenType::RParen {
                 panic!("SyntaxError: Expected `)`, got `{}`", self.current_token.value);
             }
-            self.advance();
+            self.next();
             return Factor::Expression(expression);
         }
 
         if self.current_token.token_type == TokenType::Number {
             let num = Factor::Number(self.current_token.value.parse::<BigDecimal>().unwrap());
-            self.advance();
+            self.next();
             return num;
         }
 
@@ -92,7 +92,7 @@ impl Parser {
             TokenType::Minus => TermOperator::Minus,
             _ => panic!("SyntaxError: Expected expression"),
         };
-        self.advance();
+        self.next();
         return Factor::Unary(operator, Box::new(self.factor()));
     }
 }

@@ -25,7 +25,7 @@ impl Lexer {
 
         while let Some(current_char) = self.current_char {
             if SPACES.contains(&current_char) {
-                self.advance();
+                self.next();
             } else if SINGLE_CHARS.contains(&current_char) {
                 tokens.push(self.make_single_char(current_char));
             } else if DIGITS.contains(&current_char) {
@@ -39,12 +39,12 @@ impl Lexer {
         return tokens;
     }
 
-    fn advance(&mut self) {
+    fn next(&mut self) {
         self.current_char_index += 1;
         self.current_char = self.input.chars().nth(self.current_char_index);
     }
 
-    fn next(&self) -> Option<char> {
+    fn following_char(&self) -> Option<char> {
         return self.input.chars().nth(self.current_char_index + 1);
     }
 
@@ -61,29 +61,29 @@ impl Lexer {
             '%' => TokenType::Modulo,
             _ => panic!(),
         };
-        self.advance();
+        self.next();
         return Token::new(tok_type, char.to_string());
     }
 
     fn make_number(&mut self) -> Token {
         let mut number = self.current_char.unwrap().to_string();
-        self.advance();
+        self.next();
 
         while self.current_char != None && DIGITS.contains(&self.current_char.unwrap()) {
             number.push(self.current_char.unwrap());
-            self.advance();
+            self.next();
         }
 
-        if let Some(next_char) = self.next() {
+        if let Some(next_char) = self.following_char() {
             if self.current_char == Some('.') && DIGITS.contains(&next_char) {
                 number.push('.');
-                self.advance();
+                self.next();
                 number.push(next_char);
-                self.advance();
+                self.next();
 
                 while self.current_char != None && DIGITS.contains(&self.current_char.unwrap()) {
                     number.push(self.current_char.unwrap());
-                    self.advance();
+                    self.next();
                 }
             }
         }
