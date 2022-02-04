@@ -44,10 +44,6 @@ impl Lexer {
         self.current_char = self.input.chars().nth(self.current_char_index);
     }
 
-    fn following_char(&self) -> Option<char> {
-        return self.input.chars().nth(self.current_char_index + 1);
-    }
-
     // ---------------------------------------------
 
     fn make_single_char(&mut self, char: char) -> Token {
@@ -66,7 +62,8 @@ impl Lexer {
     }
 
     fn make_number(&mut self) -> Token {
-        let mut number = self.current_char.unwrap().to_string();
+        let mut number = String::new();
+        number.push(self.current_char.unwrap());
         self.next();
 
         while self.current_char != None && DIGITS.contains(&self.current_char.unwrap()) {
@@ -74,17 +71,19 @@ impl Lexer {
             self.next();
         }
 
-        if let Some(next_char) = self.following_char() {
-            if self.current_char == Some('.') && DIGITS.contains(&next_char) {
-                number.push('.');
-                self.next();
-                number.push(next_char);
+        if self.current_char == Some('.') {
+            number.push('.');
+            self.next();
+            if self.current_char != None && DIGITS.contains(&self.current_char.unwrap()) {
+                number.push(self.current_char.unwrap());
                 self.next();
 
                 while self.current_char != None && DIGITS.contains(&self.current_char.unwrap()) {
                     number.push(self.current_char.unwrap());
                     self.next();
                 }
+            } else {
+                panic!("SyntaxError: Expected digit after decimal point");
             }
         }
 
