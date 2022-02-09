@@ -1,8 +1,6 @@
 use crate::tokens::{Token, TokenType};
 
 const DIGITS: [char; 10] = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
-const SPACES: [char; 2] = [' ', '\t'];
-const SINGLE_CHARS: [char; 7] = ['(', ')', '+', '-', '*', '/', '%'];
 
 pub struct Lexer {
     input: String,
@@ -24,14 +22,22 @@ impl Lexer {
         let mut tokens = vec![];
 
         while let Some(current_char) = self.current_char {
-            if SPACES.contains(&current_char) {
-                self.next();
-            } else if SINGLE_CHARS.contains(&current_char) {
-                tokens.push(self.make_single_char(current_char));
-            } else if DIGITS.contains(&current_char) {
-                tokens.push(self.make_number());
-            } else {
-                panic!("SyntaxError: Illegal character `{}`", current_char);
+            match current_char {
+                ' ' | '\t' | '\r' => self.next(),
+                '(' => tokens.push(self.make_single_char(TokenType::LParen,   "(")),
+                ')' => tokens.push(self.make_single_char(TokenType::RParen,   ")")),
+                '+' => tokens.push(self.make_single_char(TokenType::Plus,     "+")),
+                '-' => tokens.push(self.make_single_char(TokenType::Minus,    "-")),
+                '*' => tokens.push(self.make_single_char(TokenType::Multiply, "*")),
+                '/' => tokens.push(self.make_single_char(TokenType::Divide,   "/")),
+                '%' => tokens.push(self.make_single_char(TokenType::Modulo,   "%")),
+                _ => {
+                    if DIGITS.contains(&current_char) {
+                        tokens.push(self.make_number());
+                    } else {
+                        panic!("SyntaxError: Illegal character `{}`", current_char);
+                    }
+                }
             }
         }
         tokens.push(Token::new(TokenType::EOF, String::new()));
@@ -46,19 +52,9 @@ impl Lexer {
 
     // ---------------------------------------------
 
-    fn make_single_char(&mut self, char: char) -> Token {
-        let tok_type = match char {
-            '(' => TokenType::LParen,
-            ')' => TokenType::RParen,
-            '+' => TokenType::Plus,
-            '-' => TokenType::Minus,
-            '*' => TokenType::Multiply,
-            '/' => TokenType::Divide,
-            '%' => TokenType::Modulo,
-            _ => panic!(),
-        };
+    fn make_single_char(&mut self, token_type: TokenType, value: &str) -> Token {
         self.next();
-        return Token::new(tok_type, char.to_string());
+        return Token::new(token_type, value.to_string());
     }
 
     fn make_number(&mut self) -> Token {
