@@ -1,5 +1,5 @@
 use bigdecimal::BigDecimal;
-use crate::nodes::{Expression, TermOperator, Term, FactorOperator, Factor};
+use crate::{nodes::{Expression, Term, Factor}, tokens::TokenType};
 
 pub struct Interpreter {
     start_node: Expression,
@@ -24,8 +24,9 @@ impl Interpreter {
         for (operator, term) in &node.following {
             let other = self.visit_term(&term);
             match operator {
-                TermOperator::Plus => { base += other },
-                TermOperator::Minus => { base -= other },
+                TokenType::Plus => { base += other },
+                TokenType::Minus => { base -= other },
+                _ => panic!(),
             }
         }
 
@@ -38,9 +39,10 @@ impl Interpreter {
         for (operator, factor) in &node.following {
             let other = self.visit_factor(&factor);
             match operator {
-                FactorOperator::Multiply => { base *= other },
-                FactorOperator::Divide => { base = base / other },
-                FactorOperator::Modulo => { base = base % other },
+                TokenType::Multiply => { base *= other },
+                TokenType::Divide => { base = base / other },
+                TokenType::Modulo => { base = base % other },
+                _ => panic!(),
             }
         }
 
@@ -52,8 +54,9 @@ impl Interpreter {
             Factor::Unary(operator, factor) => {
                 let base = self.visit_factor(factor);
                 match operator {
-                    TermOperator::Plus => base,
-                    TermOperator::Minus => -base,
+                    TokenType::Plus => base,
+                    TokenType::Minus => -base,
+                    _ => panic!(),
                 }
             },
             Factor::Expression(expression) => self.visit_expression(expression),

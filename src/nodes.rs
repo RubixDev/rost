@@ -1,29 +1,19 @@
 use bigdecimal::BigDecimal;
+use crate::tokens::TokenType;
 
 #[derive(Clone)]
 pub struct Expression {
     pub term: Box<Term>,
-    pub following: Vec<(TermOperator, Term)>,
-}
-#[derive(Clone)]
-pub enum TermOperator {
-    Plus,
-    Minus,
+    pub following: Vec<(TokenType, Term)>,
 }
 #[derive(Clone)]
 pub struct Term {
     pub factor: Factor,
-    pub following: Vec<(FactorOperator, Factor)>,
-}
-#[derive(Clone)]
-pub enum FactorOperator {
-    Multiply,
-    Divide,
-    Modulo,
+    pub following: Vec<(TokenType, Factor)>,
 }
 #[derive(Clone)]
 pub enum Factor {
-    Unary(TermOperator, Box<Factor>),
+    Unary(TokenType, Box<Factor>),
     Expression(Expression),
     Number(BigDecimal),
 }

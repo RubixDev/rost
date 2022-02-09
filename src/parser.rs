@@ -1,5 +1,5 @@
 use bigdecimal::BigDecimal;
-use crate::{tokens::{Token, TokenType}, nodes::{Expression, TermOperator, Term, FactorOperator, Factor}};
+use crate::{tokens::{Token, TokenType}, nodes::{Expression, Term, Factor}};
 
 pub struct Parser {
     tokens: Vec<Token>,
@@ -39,12 +39,11 @@ impl Parser {
         let term = self.term();
 
         let mut following = vec![];
-        loop {
-            let operator = match self.current_token.token_type {
-                TokenType::Plus => TermOperator::Plus,
-                TokenType::Minus => TermOperator::Minus,
-                _ => break,
-            };
+        while [
+            TokenType::Plus,
+            TokenType::Minus,
+        ].contains(&self.current_token.token_type) {
+            let operator = self.current_token.token_type.clone();
             self.next();
             following.push((operator, self.term()));
         }
@@ -56,13 +55,12 @@ impl Parser {
         let factor = self.factor();
 
         let mut following = vec![];
-        loop {
-            let operator = match self.current_token.token_type {
-                TokenType::Multiply => FactorOperator::Multiply,
-                TokenType::Divide => FactorOperator::Divide,
-                TokenType::Modulo => FactorOperator::Modulo,
-                _ => break,
-            };
+        while [
+            TokenType::Multiply,
+            TokenType::Divide,
+            TokenType::Modulo,
+        ].contains(&self.current_token.token_type) {
+            let operator = self.current_token.token_type.clone();
             self.next();
             following.push((operator, self.factor()));
         }
@@ -87,12 +85,15 @@ impl Parser {
             return num;
         }
 
-        let operator = match self.current_token.token_type {
-            TokenType::Plus => TermOperator::Plus,
-            TokenType::Minus => TermOperator::Minus,
-            _ => panic!("SyntaxError: Expected expression"),
-        };
-        self.next();
-        return Factor::Unary(operator, Box::new(self.factor()));
+        if [
+            TokenType::Plus,
+            TokenType::Minus,
+        ].contains(&self.current_token.token_type) {
+            let operator = self.current_token.token_type.clone();
+            self.next();
+            return Factor::Unary(operator, Box::new(self.factor()));
+        }
+
+        panic!("SyntaxError: Expected expression");
     }
 }
