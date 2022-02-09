@@ -1,7 +1,5 @@
 use crate::tokens::{Token, TokenType};
 
-const DIGITS: [char; 10] = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
-
 pub struct Lexer {
     input: String,
     current_char: Option<char>,
@@ -32,7 +30,7 @@ impl Lexer {
                 '/' => tokens.push(self.make_single_char(TokenType::Divide,   "/")),
                 '%' => tokens.push(self.make_single_char(TokenType::Modulo,   "%")),
                 _ => {
-                    if DIGITS.contains(&current_char) {
+                    if current_char.is_ascii_digit() {
                         tokens.push(self.make_number());
                     } else {
                         panic!("SyntaxError: Illegal character `{}`", current_char);
@@ -62,7 +60,7 @@ impl Lexer {
         number.push(self.current_char.unwrap());
         self.next();
 
-        while self.current_char != None && DIGITS.contains(&self.current_char.unwrap()) {
+        while self.current_char != None && self.current_char.unwrap().is_ascii_digit() {
             number.push(self.current_char.unwrap());
             self.next();
         }
@@ -70,11 +68,11 @@ impl Lexer {
         if self.current_char == Some('.') {
             number.push('.');
             self.next();
-            if self.current_char != None && DIGITS.contains(&self.current_char.unwrap()) {
+            if self.current_char != None && self.current_char.unwrap().is_ascii_digit() {
                 number.push(self.current_char.unwrap());
                 self.next();
 
-                while self.current_char != None && DIGITS.contains(&self.current_char.unwrap()) {
+                while self.current_char != None && self.current_char.unwrap().is_ascii_digit() {
                     number.push(self.current_char.unwrap());
                     self.next();
                 }
