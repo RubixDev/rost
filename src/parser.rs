@@ -19,9 +19,8 @@ impl Parser {
 
     pub fn parse(&mut self) -> Expression {
         let expression = self.expression();
-        if self.current_token.token_type != TokenType::EOF {
-            panic!("SyntaxError: Expected end of file");
-        }
+        if self.current_token.token_type != TokenType::EOF
+            { panic!("SyntaxError: Expected end of file"); }
         return expression;
     }
 
@@ -32,8 +31,6 @@ impl Parser {
             .unwrap_or(&Token::new(TokenType::EOF, String::new()))
             .clone();
     }
-
-    // ------------------------------
 
     fn expression(&mut self) -> Expression {
         let term = self.term();
@@ -72,9 +69,8 @@ impl Parser {
         if self.current_token.token_type == TokenType::LParen {
             self.next();
             let expression = self.expression();
-            if self.current_token.token_type != TokenType::RParen {
-                panic!("SyntaxError: Expected `)`, got `{}`", self.current_token.value);
-            }
+            if self.current_token.token_type != TokenType::RParen
+                { panic!("SyntaxError: Expected `)`, got `{}`", self.current_token.value); }
             self.next();
             return Factor::Expression(expression);
         }
