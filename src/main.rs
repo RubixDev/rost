@@ -13,10 +13,10 @@ fn main() {
     loop {
         print!("> ");
         std::io::stdout().flush().unwrap();
+        // Eine Zeile als Eingabe lesen
         let line = std::io::stdin().lock().lines().next().unwrap().unwrap();
-        if line.chars().all(|char| [' ', '\t'].contains(&char)) { continue; }
-
-        let start = std::time::Instant::now();
+        // Ignorieren, wenn nur Leerzeichen
+        if line.chars().all(|char| [' ', '\t', '\r'].contains(&char)) { continue; }
 
         let mut lexer = Lexer::new(line);
         let tokens = lexer.scan();
@@ -24,8 +24,6 @@ fn main() {
         let mut parser = Parser::new(tokens);
         let nodes = parser.parse();
 
-        let interpreter = Interpreter::new(nodes);
-        interpreter.run();
-        println!("[{:?}]", start.elapsed());
+        Interpreter::run(nodes);
     }
 }

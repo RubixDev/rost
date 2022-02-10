@@ -1,22 +1,12 @@
 use bigdecimal::BigDecimal;
 use crate::{nodes::{Expression, Term, Factor}, tokens::TokenType};
 
-pub struct Interpreter {
-    start_node: Expression,
-}
-
+pub struct Interpreter {}
 impl Interpreter {
-    pub fn new(nodes: Expression) -> Self {
-        return Interpreter {
-            start_node: nodes,
-        }
+    pub fn run(nodes: Expression) {
+        let interpreter = Interpreter {};
+        println!("{}", interpreter.visit_expression(&nodes));
     }
-
-    pub fn run(&self) {
-        println!("{}", self.visit_expression(&self.start_node.clone()));
-    }
-
-    // --------------------------------------
 
     fn visit_expression(&self, node: &Expression) -> BigDecimal {
         let mut base = self.visit_term(&*node.term);
