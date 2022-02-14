@@ -12,8 +12,8 @@ impl Interpreter {
         }
     }
 
-    pub fn run(&self) {
-        println!("{}", self.visit_expression(&self.start_node.clone()));
+    pub fn run(&self) -> Decimal {
+        return self.visit_expression(&self.start_node.clone());
     }
 
     // --------------------------------------

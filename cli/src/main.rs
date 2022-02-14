@@ -27,7 +27,8 @@ fn main() {
                 };
 
                 let interpreter = Interpreter::new(nodes);
-                interpreter.run();
+                let res = interpreter.run();
+                println!("{}", res);
                 println!("\x1b[90m[{:?}]\x1b[0m", start.elapsed());
             },
             Err(ReadlineError::Eof) => break,
