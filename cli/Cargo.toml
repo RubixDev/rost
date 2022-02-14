@@ -1,14 +1,13 @@
 [package]
-name = "rost"
+name = "rost-cli"
+description = "Command line interface for the rost interpreter"
 version = "0.1.0"
 edition = "2021"
+authors = ["RubixDev"]
 license = "GPL-2.0-only"
-
-[workspace]
-members = ["cli"]
-default-members = ["cli"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rust_decimal = { version = "1.20.0", features = ["maths"] }
+rustyline = "9.1.2"
+rost = { path = "../" }

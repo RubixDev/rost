@@ -1,14 +1,6 @@
-#[macro_use]
-mod error;
-mod lexer;
-mod tokens;
-mod parser;
-mod nodes;
-mod interpreter;
-
-use lexer::Lexer;
-use parser::Parser;
-use interpreter::Interpreter;
+use rost::lexer::Lexer;
+use rost::parser::Parser;
+use rost::interpreter::Interpreter;
 use rustyline::{Editor, error::ReadlineError};
 
 fn main() {
