@@ -11,10 +11,15 @@ pub enum TokenType {
     Modulo,    // '%'
     IntDivide, // '\'
     Power,     // '^'
+    Assign,    // '='
+    Semicolon, // ';'
 
     Number,
+    Ident,
 
-    EOF,
+    Let,
+
+    Eof,
 }
 
 #[derive(Clone)]
@@ -25,7 +30,7 @@ pub struct Token {
 
 impl Token {
     pub fn new(token_type: TokenType, value: String) -> Self {
-        return Token { token_type, value }
+        Token { token_type, value }
     }
 }
 

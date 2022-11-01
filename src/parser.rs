@@ -1,39 +1,90 @@
-use rust_decimal::Decimal;
+use crate::{
+    error::{ErrorKind, Result},
+    nodes::*,
+    tokens::{Token, TokenType},
+};
 use std::slice::Iter;
-use crate::{tokens::{Token, TokenType}, nodes::{Expression, TermOperator, Term, FactorOperator, Factor, Power, Atom}, error::{Result, ErrorKind}};
 
 pub struct Parser<'a> {
     tokens: Iter<'a, Token>,
     current_token: Token,
 }
 
-impl <'a> Parser<'a> {
-    pub fn new(tokens: &'a Vec<Token>) -> Parser<'a> {
+impl<'a> Parser<'a> {
+    pub fn new(tokens: &'a [Token]) -> Parser<'a> {
         return Parser {
             tokens: tokens.iter(),
-            current_token: Token::new(TokenType::EOF, String::from("EOF")),
-        }
+            current_token: Token::new(TokenType::Eof, String::from("EOF")),
+        };
     }
 
-    pub fn parse(&mut self) -> Result<Expression> {
+    pub fn parse(&mut self) -> Result<Program> {
         self.advance();
-        let expression = self.expression()?;
-        if self.current_token.token_type != TokenType::EOF {
-            error!(ErrorKind::SyntaxError, "Expected end of file, got `{}`", self.current_token.value);
+        let program = self.program()?;
+        if self.current_token.token_type != TokenType::Eof {
+            error!(
+                ErrorKind::SyntaxError,
+                "Expected end of file, got `{}`", self.current_token.value
+            );
         }
-        return Ok(expression);
+        Ok(program)
     }
 
     fn advance(&mut self) {
-        self.current_token = self.tokens
+        self.current_token = self
+            .tokens
             .next()
-            .unwrap_or(&Token::new(TokenType::EOF, String::from("EOF")))
+            .unwrap_or(&Token::new(TokenType::Eof, String::from("EOF")))
             .clone();
     }
 
     // ------------------------------
+    fn program(&mut self) -> Result<Program> {
+        let mut exprs = vec![];
+        if self.current_token.token_type != TokenType::Eof {
+            exprs.push(self.expression()?);
+
+            while self.current_token.token_type == TokenType::Semicolon {
+                self.advance();
+                exprs.push(self.expression()?);
+            }
+        }
+        Ok(exprs)
+    }
 
     fn expression(&mut self) -> Result<Expression> {
+        match self.current_token.token_type {
+            TokenType::Let => Ok(Expression::Let(self.let_expr()?)),
+            _ => Ok(Expression::Add(self.add_expr()?)),
+        }
+    }
+
+    fn let_expr(&mut self) -> Result<LetExpr> {
+        self.advance();
+
+        if self.current_token.token_type != TokenType::Ident {
+            error!(
+                ErrorKind::SyntaxError,
+                "Expected identifier, got `{}`", self.current_token.value
+            );
+        }
+        let name = self.current_token.value.clone();
+        self.advance();
+
+        if self.current_token.token_type != TokenType::Assign {
+            error!(
+                ErrorKind::SyntaxError,
+                "Expected `=`, got `{}`", self.current_token.value
+            );
+        }
+        self.advance();
+
+        let expr = Box::new(self.expression()?);
+
+        Ok(LetExpr { name, expr })
+    }
+
+    fn add_expr(&mut self) -> Result<AddExpr> {
         let term = self.term()?;
 
         let mut following = vec![];
@@ -47,7 +98,10 @@ impl <'a> Parser<'a> {
             following.push((operator, self.term()?));
         }
 
-        return Ok(Expression { term: Box::new(term), following });
+        Ok(AddExpr {
+            term: Box::new(term),
+            following,
+        })
     }
 
     fn term(&mut self) -> Result<Term> {
@@ -58,55 +112,60 @@ impl <'a> Parser<'a> {
             let operator = match self.current_token.token_type {
                 TokenType::Multiply => FactorOperator::Multiply,
                 TokenType::Divide => FactorOperator::Divide,
-                TokenType::Modulo => FactorOperator::Modulo,
-                TokenType::IntDivide => FactorOperator::IntDivide,
                 _ => break,
             };
             self.advance();
             following.push((operator, self.factor()?));
         }
 
-        return Ok(Term { factor, following });
+        Ok(Term { factor, following })
     }
 
     fn factor(&mut self) -> Result<Factor> {
-        let operator = match self.current_token.token_type {
-            TokenType::Plus => TermOperator::Plus,
-            TokenType::Minus => TermOperator::Minus,
-            _ => { return Ok(Factor::Power(Box::new(self.power()?))); },
-        };
-        self.advance();
-        return Ok(Factor::Unary(operator, Box::new(self.factor()?)));
-    }
-
-    fn power(&mut self) -> Result<Power> {
-        let base = self.atom()?;
-
-        let mut exponent = None;
-        if self.current_token.token_type == TokenType::Power {
+        let mut ops = vec![];
+        loop {
+            ops.push(match self.current_token.token_type {
+                TokenType::Plus => TermOperator::Plus,
+                TokenType::Minus => TermOperator::Minus,
+                _ => break,
+            });
             self.advance();
-            exponent = Some(self.factor()?);
         }
 
-        return Ok(Power { base, exponent });
+        Ok(Factor {
+            ops,
+            atom: self.atom()?,
+        })
     }
 
     fn atom(&mut self) -> Result<Atom> {
         if self.current_token.token_type == TokenType::LParen {
             self.advance();
-            let expression = self.expression()?;
+            let expression = self.add_expr()?;
             if self.current_token.token_type != TokenType::RParen {
-                error!(ErrorKind::SyntaxError, "Expected `)`, got `{}`", self.current_token.value);
+                error!(
+                    ErrorKind::SyntaxError,
+                    "Expected `)`, got `{}`", self.current_token.value
+                );
             }
             self.advance();
             return Ok(Atom::Expression(expression));
         }
 
-        let num = match self.current_token.value.parse::<Decimal>() {
+        if self.current_token.token_type == TokenType::Ident {
+            let ident = self.current_token.value.clone();
+            self.advance();
+            return Ok(Atom::Ident(ident));
+        }
+
+        let num = match self.current_token.value.parse::<f64>() {
             Ok(num) => num,
-            Err(_) => error!(ErrorKind::SyntaxError, "Expected number, got `{}`", self.current_token.value),
+            Err(_) => error!(
+                ErrorKind::SyntaxError,
+                "Expected number, got `{}`", self.current_token.value
+            ),
         };
         self.advance();
-        return Ok(Atom::Number(num));
+        Ok(Atom::Number(num))
     }
 }

@@ -1,7 +1,19 @@
-use rust_decimal::Decimal;
+pub type Program = Vec<Expression>;
 
 #[derive(Clone)]
-pub struct Expression {
+pub enum Expression {
+    Let(LetExpr),
+    Add(AddExpr),
+}
+
+#[derive(Clone)]
+pub struct LetExpr {
+    pub name: String,
+    pub expr: Box<Expression>,
+}
+
+#[derive(Clone)]
+pub struct AddExpr {
     pub term: Box<Term>,
     pub following: Vec<(TermOperator, Term)>,
 }
@@ -19,21 +31,15 @@ pub struct Term {
 pub enum FactorOperator {
     Multiply,
     Divide,
-    Modulo,
-    IntDivide,
 }
 #[derive(Clone)]
-pub enum Factor {
-    Unary(TermOperator, Box<Factor>),
-    Power(Box<Power>),
-}
-#[derive(Clone)]
-pub struct Power {
-    pub base: Atom,
-    pub exponent: Option<Factor>,
+pub struct Factor {
+    pub ops: Vec<TermOperator>,
+    pub atom: Atom,
 }
 #[derive(Clone)]
 pub enum Atom {
-    Number(Decimal),
-    Expression(Expression),
+    Number(f64),
+    Ident(String),
+    Expression(AddExpr),
 }

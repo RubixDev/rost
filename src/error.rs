@@ -15,7 +15,7 @@ pub struct Error {
 
 impl Error {
     pub fn new(kind: ErrorKind, message: String) -> Self {
-        return Error { kind, message };
+        Error { kind, message }
     }
 }
 

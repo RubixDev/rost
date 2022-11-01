@@ -1,7 +1,8 @@
 #[macro_use]
 mod error;
-mod tokens;
-mod nodes;
 pub mod lexer;
+mod nodes;
 pub mod parser;
-pub mod interpreter;
+mod tokens;
+// pub mod interpreter;
+pub mod compiler;
