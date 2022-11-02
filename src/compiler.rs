@@ -1,3 +1,6 @@
+mod instructions;
+mod types;
+
 use std::collections::HashMap;
 
 use crate::nodes::*;
@@ -32,11 +35,11 @@ impl Compiler {
 
     pub fn compile(mut self) -> Vec<u8> {
         self.type_section.extend_from_slice(&[
-            1,    // count 1
-            0x60, // func
-            0,    // num of params
-            1,    // num of return vals
-            0x7C, // type of return val (f64)
+            1, // count 1
+            types::FUNC,
+            0,          // num of params
+            1,          // num of return vals
+            types::F64, // type of return val (f64)
         ]);
         self.function_section.extend_from_slice(&[
             1, // count 1
@@ -66,9 +69,9 @@ impl Compiler {
                 .filter(|expr| matches!(expr, Expression::Let(_)))
                 .count() as u64,
         ));
-        buf.push(0x7c); // f64 locals type
+        buf.push(types::F64); // f64 locals type
         self.program(&mut buf, tree);
-        buf.push(0x0b); // end of function body
+        buf.push(instructions::END); // end of function body
         self.code_section.append(&mut as_uleb128(buf.len() as u64)); // len of function body
         self.code_section.append(&mut buf); // body content
 
@@ -112,7 +115,7 @@ impl Compiler {
         self.expression(buf, *node.expr);
 
         let local_idx = as_uleb128(self.symbols.len() as u64);
-        buf.push(0x21); // local.set
+        buf.push(instructions::LOCAL_SET);
         buf.append(&mut local_idx.clone()); // index in locals
         self.symbols.insert(node.name, local_idx);
     }
@@ -122,8 +125,8 @@ impl Compiler {
         for (op, term) in node.following {
             self.term(buf, term);
             let instruction = match op {
-                TermOperator::Plus => 0xA0,  // f64.add
-                TermOperator::Minus => 0xA1, // f64.sub
+                TermOperator::Plus => instructions::F64_ADD,
+                TermOperator::Minus => instructions::F64_SUB,
             };
             buf.push(instruction);
         }
@@ -134,8 +137,8 @@ impl Compiler {
         for (op, factor) in node.following {
             self.factor(buf, factor);
             let instruction = match op {
-                FactorOperator::Multiply => 0xA2, // f64.mul
-                FactorOperator::Divide => 0xA3,   // f64.div
+                FactorOperator::Multiply => instructions::F64_MUL,
+                FactorOperator::Divide => instructions::F64_DIV,
             };
             buf.push(instruction);
         }
@@ -147,7 +150,7 @@ impl Compiler {
         for op in node.ops {
             match op {
                 TermOperator::Plus => {}
-                TermOperator::Minus => buf.push(0x9A), // f64.neg
+                TermOperator::Minus => buf.push(instructions::F64_NEG),
             }
         }
     }
@@ -155,7 +158,7 @@ impl Compiler {
     fn atom(&mut self, buf: &mut Vec<u8>, node: Atom) {
         match node {
             Atom::Number(num) => {
-                buf.push(0x44); // f64.const
+                buf.push(instructions::F64_CONST);
                 buf.extend_from_slice(&num.to_le_bytes());
             }
             Atom::Ident(name) => {
@@ -164,7 +167,7 @@ impl Compiler {
                     .get(&name)
                     .unwrap_or_else(|| panic!("unresolved variable `{name}`"))
                     .clone();
-                buf.push(0x20); // local.get
+                buf.push(instructions::LOCAL_GET);
                 buf.append(&mut local_idx); // index in locals
             }
             Atom::Expression(node) => self.add_expr(buf, node),
